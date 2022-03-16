@@ -1,5 +1,5 @@
 import { IDataSource } from './data-source';
-import { Observable, ReplaySubject } from 'rxjs';
+import { ReplaySubject } from 'rxjs';
 
 /**
  * @interface DataSources interface passed to Repository
@@ -11,8 +11,8 @@ import { Observable, ReplaySubject } from 'rxjs';
  */
 
 export interface IRepository<T> {
-  readonly primary: IDataSource<T, T>;
-  readonly secondary?: IDataSource<T, T>[];
+  readonly primary: IDataSource<T>;
+  readonly secondary?: IDataSource<T>[];
 }
 
 export interface DataSources<T> extends IRepository<T> {
@@ -27,8 +27,8 @@ export abstract class Repository<T> implements IRepository<T> {
   readonly _subject$: ReplaySubject<T>;
   readonly _sources: DataSources<T>;
 
-  readonly primary: IDataSource<T, T>;
-  readonly secondary?: IDataSource<T, T>[];
+  readonly primary: IDataSource<T>;
+  readonly secondary?: IDataSource<T>[];
 
   constructor(sources: DataSources<T>) {
     this._subject$ = new ReplaySubject(!sources.cache?.enabled ? 0 : 1, sources.cache?.ttl ?? Infinity);
@@ -39,7 +39,7 @@ export abstract class Repository<T> implements IRepository<T> {
 
   // private _emit(): Observable<unknown> {}
 
-  // private _getFromSource(): Observable<T> {
+  // private get(): Observable<T> {
   //   const fork$ = forkJoin(
   //     this._sources.sources.map(it =>
   //       it.getAll().pipe(

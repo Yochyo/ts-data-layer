@@ -1,6 +1,9 @@
 import { Observable } from 'rxjs';
 
-export interface IDataSource<In, Out> {
-  getAll(): Observable<Out>;
-  setAll(data: In): Observable<Out>;
+/**
+ * Every method in a DataSource should return an Observable<T>
+ */
+export interface IDataSource<T> {
+  getAll(): Observable<T>;
+  setAll?(data: T): Observable<T>;
 }

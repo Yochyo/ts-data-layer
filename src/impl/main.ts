@@ -11,7 +11,7 @@ export type User = {
 interface IUserDataLayer {
   setAge: (age: number) => Observable<User>;
 }
-interface UserDataSource extends IDataSource<User, User>, IUserDataLayer {}
+interface UserDataSource extends IDataSource<User>, IUserDataLayer {}
 
 export class ImplDataSource implements UserDataSource {
   private user: User = { name: '1', age: 0 };
@@ -21,6 +21,7 @@ export class ImplDataSource implements UserDataSource {
 
   setAll(data: User): Observable<User> {
     this.user = data;
+    console.log('log all in ImplDataSource ' + JSON.stringify(data));
     return this.getAll();
   }
 
@@ -40,6 +41,7 @@ export class ImplRepository extends Repository<User> implements IUserDataLayer {
 
 new ImplRepository({
   primary: new ImplDataSource(),
+  secondary: [new ImplDataSource()],
 })
   .setAge(1)
   .subscribe();
