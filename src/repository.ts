@@ -18,7 +18,7 @@ export interface IRepository<T> {
 export interface DataSources<T> extends IRepository<T> {
   cache?: {
     enabled?: boolean;
-    ttl?: number; // TODO
+    ttl?: number;
     refresh?: number; // TODO
   };
 }
@@ -35,6 +35,11 @@ export abstract class Repository<T> implements IRepository<T> {
     this._sources = sources;
     this.primary = sources.primary;
     this.secondary = sources.secondary;
+  }
+
+  @Set
+  public setAge(age: number) {
+    throw new Error();
   }
 
   // private _emit(): Observable<unknown> {}
