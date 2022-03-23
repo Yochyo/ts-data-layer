@@ -1,10 +1,11 @@
 import { IDataSource } from './data-source';
-import { ReplaySubject } from 'rxjs';
+import { concat, first, Observable, ReplaySubject, tap } from 'rxjs';
+import { Set } from './decorators';
 
 /**
  * @interface DataSources interface passed to Repository
- * @property {IDataSource} main the main.ts datasource. Every Repository requires at least one datasource
- * @property {IDataSource | IDataSource[]} sub datasource(s) that are used to pull data from when the main.ts datasource cannot be used
+ * @property {IDataSource} main the main.spec.ts datasource. Every Repository requires at least one datasource
+ * @property {IDataSource | IDataSource[]} sub datasource(s) that are used to pull data from when the main.spec.ts datasource cannot be used
  * @property {boolean?} set false to disable cache, otherwise enables cache
  * @property {number?} cache.ttl time the cached value lives in ms
  * @property {number?} refresh the cache is refreshed automatically when subscribe is called after n ms since the last update
@@ -37,11 +38,22 @@ export abstract class Repository<T> implements IRepository<T> {
     this.secondary = sources.secondary;
   }
 
+  get subject$(): Observable<T> {
+    // TODO temp fix but should use switchmap or so
+    // this._subject$.error("")
+    if (this._subject$.isEmpty())
+      this.get().subscribe({
+        next: next => this._subject$.next(next),
+        error: err => console.error('err ' + err),
+        complete: () => console.log('complete'),
+      });
+    return this._subject$;
+  }
+
   @Set
   public setAge(age: number) {
     throw new Error();
   }
-
   // private _emit(): Observable<unknown> {}
 
   // private get(): Observable<T> {
@@ -64,8 +76,27 @@ export abstract class Repository<T> implements IRepository<T> {
   //       return first;
   //     })
   //   );
-  //   // TODO check that main.ts source is always first
+  //   // TODO check that main.spec.ts source is always first
   // }
 
   // private _shouldUpdate = () => this._sources.
+
+  private get(): Observable<T> {
+    return concat(this.primary.getAll(), ...(this.secondary?.map(it => it.getAll()) ?? [])).pipe(first());
+  }
 }
+
+declare module 'rxjs' {
+  // eslint-disable-next-line no-unused-vars
+  interface ReplaySubject<T> {
+    isEmpty(): boolean;
+  }
+}
+
+// https://stackoverflow.com/a/41586938/7469737
+ReplaySubject.prototype.isEmpty = function () {
+  // @ts-ignore
+  this._trimBuffer();
+  // @ts-ignore
+  return this._buffer.length == 0;
+};

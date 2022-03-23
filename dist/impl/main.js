@@ -19,6 +19,7 @@ class ImplDataSource {
     }
     setAll(data) {
         this.user = data;
+        console.log('log all in ImplDataSource ' + JSON.stringify(data));
         return this.getAll();
     }
     setAge(age) {
@@ -37,9 +38,25 @@ __decorate([
     decorators_1.Set
 ], ImplRepository.prototype, "setAge", null);
 exports.ImplRepository = ImplRepository;
-new ImplRepository({
-    primary: new ImplDataSource(),
-})
-    .setAge(1)
-    .subscribe();
+rxjs_1.ReplaySubject.prototype.isEmpty = function () {
+    // @ts-ignore
+    console.log('before ' + this._buffer.length);
+    // @ts-ignore
+    this._trimBuffer();
+    // @ts-ignore
+    console.log('after ' + this._buffer.length);
+    // @ts-ignore
+    return this._buffer.length == 0;
+};
+const _subject$ = new rxjs_1.ReplaySubject(1, 10);
+_subject$.next('');
+// const pipe = _subject$.pipe(
+//   map(_ => false),
+//   startWith(true)
+// );
+(0, rxjs_1.of)('')
+    .pipe((0, rxjs_1.delay)(1000))
+    .subscribe(it => {
+    console.log(_subject$.isEmpty());
+});
 //# sourceMappingURL=main.js.map

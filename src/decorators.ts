@@ -13,12 +13,16 @@ import { IDataSource } from './data-source';
 export function Set(target: Repository<any>, propertyKey: string, descriptor: PropertyDescriptor) {
   descriptor.value = function (...args: any) {
     // get repository
-    const obj = this as Repository<any>;
+    const obj = this as unknown as Repository<any>;
     // get primary source and call its method (has to be the same name)
     const observable = (obj.primary as any)[propertyKey].apply(obj.primary, args);
     // TODO was passiert wenn primary ein fehler wirft? Wird switchMap dann aufgerufen?
     return observable.pipe(
       // emits change if successful
+      catchError(err => {
+        console.error(err);
+        return of('');
+      }),
       tap(res => obj._subject$.next(res)),
       // TODO wenn error sollen die secondaries nicht geschrieben werden
       // if successful, tries updating all secondary sources
@@ -36,7 +40,7 @@ export function Set(target: Repository<any>, propertyKey: string, descriptor: Pr
 // TODO is this needed?
 export function Get(target: Repository<any>, propertyKey: string, descriptor: PropertyDescriptor) {
   descriptor.value = function (...args: any) {
-    const obj = this as Repository<any>;
+    const obj = this as unknown as Repository<any>;
     const observable = (obj.primary as any)[propertyKey].apply(obj.primary, args);
     // TODO was passiert wenn primary ein fehler wirft? Wird switchMap dann aufgerufen?
     return observable.pipe(
