@@ -2,7 +2,7 @@
 
 // TODO Eine SetSubset annotation
 
-import { catchError, of, timeout, first, take } from 'rxjs';
+import { catchError, first, of, timeout } from 'rxjs';
 import { TestImplDataSource, TestImplRepository } from '../src/utils';
 
 test('_subject$ should not emit a value', done => {
@@ -38,7 +38,7 @@ test('subject$ should emit values twice', done => {
     primary: new TestImplDataSource(),
   });
   let f = true;
-  repo.subject$.pipe(take(10)).subscribe({
+  repo.subject$.pipe().subscribe({
     next: next => {
       console.log('in next: first = ' + f);
       if (f) {
@@ -53,7 +53,7 @@ test('subject$ should emit values twice', done => {
           });
       } else {
         console.log('second');
-        expect(next).toBe({ ...TestImplDataSource.DEFAULT, age: 10 });
+        expect(next).toStrictEqual({ ...TestImplDataSource.DEFAULT, age: 10 });
         done();
       }
     },
