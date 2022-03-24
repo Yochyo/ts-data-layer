@@ -21,9 +21,11 @@ export function Set(target: Repository<any>, propertyKey: string, descriptor: Pr
       // emits change if successful
       catchError(err => {
         console.error(err);
-        return of('');
+        return of(err);
       }),
-      tap(res => obj._subject$.next(res)),
+      tap(res => {
+        obj._subject$.next(res);
+      }),
       // TODO wenn error sollen die secondaries nicht geschrieben werden
       // if successful, tries updating all secondary sources
       switchMap(res => {
@@ -31,7 +33,10 @@ export function Set(target: Repository<any>, propertyKey: string, descriptor: Pr
 
         // TODO setAll kann undefined sein
         // returns result of primary source
-        return forkJoin(obj.secondary?.map(secondary => (secondary as IDataSource<any>).setAll!.apply(secondary, args))).pipe(switchMap(_ => of(res)));
+        return forkJoin(obj.secondary.map(secondary => (secondary as IDataSource<any>).setAll!.apply(secondary, args))).pipe(
+          first(),
+          switchMap(_ => of(res))
+        );
       })
     );
   };

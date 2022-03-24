@@ -32,6 +32,7 @@ export class TestImplDataSource implements TestUserDataSource {
 
   setAge(age: number): Observable<TestUser> {
     this.user.age = age;
+    console.log('age is now' + age);
     return of(this.user);
   }
 }

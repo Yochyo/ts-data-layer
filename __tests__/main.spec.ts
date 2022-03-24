@@ -2,7 +2,7 @@
 
 // TODO Eine SetSubset annotation
 
-import { catchError, of, timeout } from 'rxjs';
+import { catchError, of, timeout, first, take } from 'rxjs';
 import { TestImplDataSource, TestImplRepository } from '../src/utils';
 
 test('_subject$ should not emit a value', done => {
@@ -37,20 +37,31 @@ test('subject$ should emit values twice', done => {
   const repo = new TestImplRepository({
     primary: new TestImplDataSource(),
   });
-  let first = true;
-  repo.subject$.subscribe({
+  let f = true;
+  repo.subject$.pipe(take(10)).subscribe({
     next: next => {
-      if (first) {
-        console.log('first');
+      console.log('in next: first = ' + f);
+      if (f) {
         expect(next).toBe(TestImplDataSource.DEFAULT);
-        first = false;
-        repo.setAge(10);
+        // eslint-disable-next-line no-unused-vars
+        const a = repo
+          .setAge(10)
+          .pipe(first())
+          .subscribe(_ => {
+            f = false;
+            console.log('subscribe age ' + f);
+          });
       } else {
         console.log('second');
         expect(next).toBe({ ...TestImplDataSource.DEFAULT, age: 10 });
         done();
       }
     },
-    error: err => console.error(err),
+    error: err => {
+      console.error(err);
+    },
+    complete: () => {
+      console.log('complete');
+    },
   });
 });
