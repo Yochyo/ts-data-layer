@@ -15,16 +15,19 @@ export function Set(target: Repository<any>, propertyKey: string, descriptor: Pr
     // get repository
     const obj = this as unknown as Repository<any>;
     // get primary source and call its method (has to be the same name)
-    const observable = (obj.primary as any)[propertyKey].apply(obj.primary, args);
+    const observable: Observable<any> = (obj.primary as any)[propertyKey].apply(obj.primary, args);
     // TODO was passiert wenn primary ein fehler wirft? Wird switchMap dann aufgerufen?
     return observable.pipe(
-      // emits change if successful
       catchError(err => {
         console.error(err);
         return of(err);
       }),
+      // emits change if successful
+      // tap(res => {
+      //   obj._subject$.next(res);
+      // }),
       tap(res => {
-        obj._subject$.next(res);
+        setTimeout(() => obj._subject$.next(res), 0);
       }),
       // TODO wenn error sollen die secondaries nicht geschrieben werden
       // if successful, tries updating all secondary sources
