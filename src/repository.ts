@@ -40,12 +40,10 @@ export abstract class Repository<T> implements IRepository<T> {
 
   get subject$(): Observable<T> {
     // TODO temp fix but should use switchmap or so
-    // this._subject$.error("")
     if (this._subject$.isEmpty())
       this.get().subscribe({
         next: next => this._subject$.next(next),
         error: err => console.error('err ' + err),
-        complete: () => console.log('complete'),
       });
     return this._subject$;
   }
